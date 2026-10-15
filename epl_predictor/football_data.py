@@ -90,13 +90,3 @@ def get_round_fixtures(round_label):
     data = _get(f"/competitions/{COMPETITION}/matches", {"matchday": matchday})
     return [_normalize(m) for m in data.get("matches", [])]
 
-
-def get_historical_fixtures(season_years):
-    fixtures = []
-    for year in season_years:
-        data = _get(
-            f"/competitions/{COMPETITION}/matches",
-            {"season": year, "status": "FINISHED"},
-        )
-        fixtures.extend(_normalize(m) for m in data.get("matches", []))
-    return fixtures
