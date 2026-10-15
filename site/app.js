@@ -139,6 +139,17 @@
         <td style="color:var(--ink-2)">${p ? `${fmt.pct(p.pH)} / ${fmt.pct(p.pD)} / ${fmt.pct(p.pA)}` : "–"}</td></tr>`;
     }).join("")}</tbody>` : `<tr><td class="empty">No upcoming bets saved. Run predict, then export.</td></tr>`;
 
+  // The same bets as one block per match, for phones (the table needs a wide screen).
+  $("bets-list").innerHTML = U.length ? U.map((f) => {
+    const picks = realModels.map((m) => (f.bets[m] ? f.bets[m].pick.join("-") : "–"));
+    const p = f.bets[ref];
+    return `<div class="bet">
+      <div class="bet-head"><b>${f.home} – ${f.away}</b><span class="when">${fmt.kickoff(f.kickoff)} UTC</span></div>
+      <div class="bet-picks">${realModels.map((m, i) => `<span class="model">${swatch(m)}${m} <b>${picks[i]}</b></span>`).join("")}</div>
+      <div class="when">${p ? `${ref}: H ${fmt.pct(p.pH)} D ${fmt.pct(p.pD)} A ${fmt.pct(p.pA)} · ` : ""}${new Set(picks).size > 1 ? "models split" : "same bet"}</div>
+    </div>`;
+  }).join("") : `<p class="empty">No upcoming bets saved. Run predict, then export.</p>`;
+
   $("theme").addEventListener("click", () => {
     const root = document.documentElement;
     const dark = root.dataset.theme === "dark" || (!root.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
