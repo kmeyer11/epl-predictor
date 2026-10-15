@@ -1,7 +1,7 @@
-"""Map football-data.org team names to football-data.co.uk's spelling.
+"""Map football-data.org and Fantasy Premier League team names to football-data.co.uk's spelling.
 
-Results come from football-data.co.uk and upcoming fixtures from
-football-data.org, so names must match. co.uk's short names are canonical.
+Results come from football-data.co.uk, upcoming fixtures from football-data.org
+and team news from FPL, so names must match. co.uk's short names are canonical.
 """
 
 _ALIASES = {
@@ -15,12 +15,14 @@ _ALIASES = {
     "Leicester City": "Leicester",
     "Luton Town": "Luton",
     "Manchester City": "Man City",
+    "Man Utd": "Man United",
     "Manchester United": "Man United",
     "Newcastle United": "Newcastle",
     "Norwich City": "Norwich",
     "Nottingham Forest": "Nott'm Forest",
     "Queens Park Rangers": "QPR",
     "Stoke City": "Stoke",
+    "Spurs": "Tottenham",
     "Swansea City": "Swansea",
     "Tottenham Hotspur": "Tottenham",
     "West Bromwich Albion": "West Brom",

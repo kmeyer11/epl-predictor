@@ -19,6 +19,9 @@ SITE_DIR = Path(os.path.expanduser(os.environ.get("SITE_DIR") or ROOT_DIR / "sit
 
 FOOTBALL_DATA_COUK_BASE_URL = "https://www.football-data.co.uk/mmz4281"
 
+# Fantasy Premier League: player availability (injuries, suspensions) for the gossip model.
+FPL_BASE_URL = "https://fantasy.premierleague.com/api"
+
 # football-data.co.uk has odds for every season from here on.
 FIRST_SEASON = 2014
 

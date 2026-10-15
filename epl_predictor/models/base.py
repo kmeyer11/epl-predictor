@@ -54,6 +54,10 @@ class Model:
     def predict(self, fixture):
         return scoring.summarize(self.score_matrix(fixture))
 
+    def explain(self, fixture):
+        """A line of context `predict` prints under this model's bet, or None."""
+        return None
+
 
 def weakest_mean(values, n=3):
     """Mean of the n lowest values: the starting strength for a team with no history.
