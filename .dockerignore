@@ -1,0 +1,8 @@
+.git
+.venv
+.env
+.conductor
+data
+site/data.js
+**/__pycache__
+.DS_Store
