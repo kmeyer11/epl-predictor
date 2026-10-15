@@ -14,8 +14,6 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.stats import poisson
 
-from ..teamnames import normalize_team
-
 MAX_GOALS = 9
 
 
@@ -53,8 +51,7 @@ class DixonColes:
             raise ValueError("Need at least ~20 finished matches to fit a model.")
 
         teams = sorted(
-            {normalize_team(m["home_team"]) for m in matches}
-            | {normalize_team(m["away_team"]) for m in matches}
+            {m["home_team"] for m in matches} | {m["away_team"] for m in matches}
         )
         self.teams = teams
         idx = {t: i for i, t in enumerate(teams)}
@@ -64,8 +61,8 @@ class DixonColes:
         weights = np.array(
             [np.exp(-self.xi * (most_recent - _parse_date(m["kickoff"])).days) for m in matches]
         )
-        home_idx = np.array([idx[normalize_team(m["home_team"])] for m in matches])
-        away_idx = np.array([idx[normalize_team(m["away_team"])] for m in matches])
+        home_idx = np.array([idx[m["home_team"]] for m in matches])
+        away_idx = np.array([idx[m["away_team"]] for m in matches])
         home_goals = np.array([m["home_goals"] for m in matches])
         away_goals = np.array([m["away_goals"] for m in matches])
 
@@ -114,12 +111,11 @@ class DixonColes:
     def expected_goals(self, home_team, away_team):
         if not self._fitted:
             raise RuntimeError("Call fit() before predicting.")
-        home_key, away_key = normalize_team(home_team), normalize_team(away_team)
-        if home_key not in self.alpha or away_key not in self.alpha:
-            missing = home_team if home_key not in self.alpha else away_team
+        if home_team not in self.alpha or away_team not in self.alpha:
+            missing = home_team if home_team not in self.alpha else away_team
             raise ValueError(f"'{missing}' has no fitted data (not enough recent matches).")
-        lam = np.exp(self.alpha[home_key] + self.beta[away_key] + self.gamma)
-        mu = np.exp(self.alpha[away_key] + self.beta[home_key])
+        lam = np.exp(self.alpha[home_team] + self.beta[away_team] + self.gamma)
+        mu = np.exp(self.alpha[away_team] + self.beta[home_team])
         return float(lam), float(mu)
 
     def score_matrix(self, home_team, away_team):

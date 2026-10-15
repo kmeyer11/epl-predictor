@@ -6,7 +6,6 @@ from . import config
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS fixtures (
     fixture_id TEXT PRIMARY KEY,
-    league     TEXT NOT NULL,
     season     INTEGER NOT NULL,
     round      TEXT,
     kickoff    TEXT NOT NULL,
@@ -36,11 +35,10 @@ def init_db():
 
 
 def upsert_fixtures(fixtures):
-    """fixtures: list of normalized dicts (see providers/*.py `_normalize`)."""
+    """fixtures: list of normalized dicts (see football_data.py `_normalize`)."""
     rows = [
         (
             f["fixture_id"],
-            f["league"],
             f["season"],
             f["round"],
             f["kickoff"],
@@ -56,9 +54,9 @@ def upsert_fixtures(fixtures):
         conn.executemany(
             """
             INSERT INTO fixtures (
-                fixture_id, league, season, round, kickoff, status,
+                fixture_id, season, round, kickoff, status,
                 home_team, away_team, home_goals, away_goals
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(fixture_id) DO UPDATE SET
                 round=excluded.round,
                 kickoff=excluded.kickoff,
@@ -71,15 +69,15 @@ def upsert_fixtures(fixtures):
     return len(rows)
 
 
-def get_finished_fixtures(league_slug, seasons):
+def get_finished_fixtures(seasons):
     placeholders = ",".join("?" for _ in seasons)
     with connect() as conn:
         cur = conn.execute(
             f"""
             SELECT * FROM fixtures
-            WHERE league = ? AND season IN ({placeholders}) AND status = 'FT'
+            WHERE season IN ({placeholders}) AND status = 'FT'
             ORDER BY kickoff
             """,
-            (league_slug, *seasons),
+            tuple(seasons),
         )
         return [dict(r) for r in cur.fetchall()]
