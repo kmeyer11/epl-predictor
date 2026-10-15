@@ -143,5 +143,19 @@ tr:last-child td { border-bottom: 0; }
 
 .bets td.pick { font-weight: 600; text-align: center; }
 .bets .when { color: var(--muted); font-size: 12px; }
+.bets-list { display: none; }
+.bet { padding: 10px 0; border-bottom: 1px solid var(--grid); }
+.bet:last-child { border-bottom: 0; }
+.bet-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.bet-picks { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 6px 0 4px; font-size: 13px; }
+.bet-picks .model { gap: 5px; }
+.bet .when { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.bet > .when { white-space: normal; }
+@media (max-width: 640px) {
+  .bets-wide { display: none; }
+  .bets-list { display: block; }
+  .wrap { padding-left: 14px; padding-right: 14px; }
+  .card { padding: 14px; }
+}
 .foot { margin-top: 24px; color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .empty { color: var(--muted); padding: 12px 0; }
