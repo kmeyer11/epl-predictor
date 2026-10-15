@@ -8,6 +8,8 @@ plshowet prediction game.
   and needs no key.
 - football-data.org supplies the upcoming fixtures. It is free and allows
   10 requests per minute.
+- The Fantasy Premier League API supplies team news (injuries,
+  suspensions, doubts) for the `gossip` model. It is free and needs no key.
 
 ## Setup
 
@@ -80,10 +82,19 @@ collects the outcome points from 2-0, 2-1, and so on. Use
 | `dixon-coles` | Attack and defence strength per team, with recent results weighted more. |
 | `elo` | Elo ratings, converted to expected goals by a Poisson regression. |
 | `market` | The bookmakers' average pre-match odds, converted to a score matrix. This is a benchmark. It works in the backtest only, because upcoming matches have no odds yet. |
+| `gossip` | `dixon-coles`, adjusted for the latest team news. It works live only, because there is no archive of past team news. |
 
 Every model trains on the current season and the two before it. A team
 with no results in that window, usually a promoted team, starts with the
 average strength of the three weakest teams.
+
+`gossip` reads each player's chance of playing from the FPL API. A team
+without players who make a big share of its expected goals and assists
+scores less. A team without its keeper or regular defenders concedes more.
+`predict` prints the absences behind each `gossip` bet. How much an
+absence costs is a guess (`ATTACK_LOSS`, `DEFENCE_LOSS` in
+`models/gossip.py`), because there is no past news to fit it on. Compare it
+with `compare --live` after a few rounds.
 
 `baseline` and `market` are marked as benchmarks: they are yardsticks,
 not real attempts at predicting.

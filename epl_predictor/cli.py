@@ -124,6 +124,9 @@ def predict(model_names):
                     f"A {pred['p_away']*100:3.0f}%   "
                     f"bet {pred['pick'][0]}-{pred['pick'][1]} ({pred['pick_points']:.2f} exp. pts)"
                 )
+                note = model.explain(f)
+                if note:
+                    click.echo(f"  {'':<12} {note}")
         click.echo()
 
     db.upsert_predictions(rows)

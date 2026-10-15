@@ -36,10 +36,14 @@ def _leaderboard(rows):
 
 
 def _races(rows, seasons):
-    """Cumulative points per backtest refit block (roughly a round), per season and model."""
-    names = list(MODELS)
+    """Cumulative points per backtest refit block (roughly a round), per season and model.
+
+    Only models that bet that season: live-only models have no backtest.
+    """
     races = {}
     for season in seasons:
+        played = {r["model"] for r in rows if r["season"] == season}
+        names = [m for m in MODELS if m in played]
         per_block = defaultdict(lambda: defaultdict(int))
         for r in rows:
             if r["season"] == season:

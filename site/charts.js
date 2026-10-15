@@ -159,7 +159,8 @@
   // Race data for one season: cumulative points per refit block, one series per model.
   function race(season, relativeTo) {
     const blocks = D.backtest.races[season];
-    const models = D.models.map((m) => m.name);
+    // Models without a backtest (live only) have no key in the blocks.
+    const models = D.models.map((m) => m.name).filter((m) => blocks.length && m in blocks[0]);
     const series = models.map((m) => ({
       model: m,
       values: blocks.map((b) => b[m] - (relativeTo ? b[relativeTo] : 0)),
