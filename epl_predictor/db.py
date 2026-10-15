@@ -185,3 +185,16 @@ def prediction_row(kind, model, fixture, prediction, created_at):
         "top_away": prediction["top"][1],
     }
 
+
+def get_unplayed_live_predictions(models):
+    """Live bets for matches that have no final score stored yet."""
+    sql = """
+        SELECT p.* FROM predictions p
+        LEFT JOIN fixtures f
+          ON f.season = p.season AND f.home_team = p.home_team AND f.away_team = p.away_team
+          AND f.status = 'FT'
+        WHERE p.kind = 'live' AND f.fixture_id IS NULL
+    """
+    sql += " AND (" + " OR ".join("(p.model = ? AND p.model_version = ?)" for _ in models) + ")"
+    with connect() as conn:
+        return [dict(r) for r in conn.execute(sql, [v for pair in models for v in pair])]

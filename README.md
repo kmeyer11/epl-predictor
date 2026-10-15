@@ -23,6 +23,8 @@ Then edit `.env`:
 - `FOOTBALL_DATA_KEY`: Register for a free key at
   https://www.football-data.org/client/register. Registration is immediate
   and needs only an email address.
+- `SITE_DIR` (optional): the folder `export` writes the website's
+  `data.js` to. Defaults to `data/site`.
 
 The tool caches results and predictions locally in a SQLite database
 (`data/epl_predictor.db`).
@@ -41,6 +43,9 @@ python -m epl_predictor.cli backtest
 
 # List the models.
 python -m epl_predictor.cli models
+
+# Write data.js for the comparison website.
+python -m epl_predictor.cli export
 
 # Show the leaderboard again, with options.
 python -m epl_predictor.cli compare --by-season
@@ -108,6 +113,13 @@ make a subclass with a new name instead of changing the defaults.
 - The `vs #1` column shows each model's gap to the leader, with a 95%
   interval. If the interval includes 0, the gap could be luck. Even 10
   seasons of results cannot separate models that are close.
+
+## Website
+
+A static comparison page lives in the council repo, in
+`03-website-making/sites/epl-predictor/`. It reads the `data.js` that
+`export` writes. To refresh it, run `fetch`, then `backtest` if a model
+changed, then `predict` before a round, then `export`.
 
 ## Notes
 

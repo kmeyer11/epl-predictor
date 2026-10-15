@@ -3,7 +3,7 @@ from datetime import date, datetime, timezone
 
 import click
 
-from . import config, db, football_data, football_data_couk, scoring
+from . import config, db, export, football_data, football_data_couk, scoring
 from .backtest import run_season
 from .models import MODELS
 from .teams import canonical
@@ -195,6 +195,18 @@ def models():
     """List the registered models."""
     for cls in MODELS.values():
         click.echo(f"{cls.name:<12} v{cls.version}  {cls.description}")
+
+
+@cli.command("export")
+def export_site():
+    """Write data.js for the comparison website (to SITE_DIR from .env)."""
+    db.init_db()
+    path = config.SITE_DIR / "data.js"
+    data = export.write(path)
+    click.echo(
+        f"Wrote {path}: {data['backtest']['matches']} backtest matches, "
+        f"{data['live']['matches']} scored live bets, {len(data['upcoming'])} upcoming matches."
+    )
 
 
 def _current_versions(model_names=None):
