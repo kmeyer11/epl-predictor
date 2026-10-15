@@ -1,8 +1,8 @@
 """Build the data file the comparison website reads.
 
-The site (council repo, 03-website-making/sites/epl-predictor) is static: it
-loads `data.js`, which sets `window.EPL`. A script file rather than JSON, so
-the page also works opened straight from disk without a server.
+The site (`site/` in this repo) is static: it loads `data.js`, which sets
+`window.EPL`. A script file rather than JSON, so the page also works opened
+straight from disk without a server.
 """
 import json
 from collections import defaultdict

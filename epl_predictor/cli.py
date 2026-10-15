@@ -198,8 +198,9 @@ def models():
 
 
 @cli.command("export")
-def export_site():
-    """Write data.js for the comparison website (to SITE_DIR from .env)."""
+@click.option("--open", "open_site", is_flag=True, help="Open the website afterwards.")
+def export_site(open_site):
+    """Write data.js for the comparison website in site/."""
     db.init_db()
     path = config.SITE_DIR / "data.js"
     data = export.write(path)
@@ -207,6 +208,8 @@ def export_site():
         f"Wrote {path}: {data['backtest']['matches']} backtest matches, "
         f"{data['live']['matches']} scored live bets, {len(data['upcoming'])} upcoming matches."
     )
+    if open_site:
+        click.launch(str(config.SITE_DIR / "index.html"))
 
 
 def _current_versions(model_names=None):

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EPL predictor</title>
+<link rel="stylesheet" href="style.css">
+<script>
+  // Before first paint, so a saved theme doesn't flash the other one.
+  const saved = localStorage.getItem("theme");
+  if (saved) document.documentElement.dataset.theme = saved;
+  if (location.hash === "#dark" || location.hash === "#light") document.documentElement.dataset.theme = location.hash.slice(1);
+</script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>EPL predictor</h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <button class="theme" id="theme">Toggle dark</button>
+  </header>
+
+  <div class="grid" id="app">
+    <div class="card tile span-3" id="t1"></div>
+    <div class="card tile span-3" id="t2"></div>
+    <div class="card tile span-3" id="t3"></div>
+    <div class="card tile span-3" id="t4"></div>
+
+    <section class="card span-12">
+      <div class="card-head">
+        <div>
+          <h2>Leaderboard</h2>
+          <p class="hint" style="margin:0" id="board-hint"></p>
+        </div>
+        <div class="seg" id="board-kind"></div>
+      </div>
+      <div style="overflow-x:auto"><table id="board"></table></div>
+    </section>
+
+    <section class="card span-12">
+      <div class="card-head">
+        <div>
+          <h2>Season race</h2>
+          <p class="hint" style="margin:0" id="race-hint"></p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="seg" id="mode"></div>
+          <div class="seg" id="seasons"></div>
+        </div>
+      </div>
+      <div id="legend-race" style="margin-bottom:8px"></div>
+      <div id="race"></div>
+    </section>
+
+    <section class="card span-12">
+      <h2>Points per match, by season</h2>
+      <p class="hint">No model wins every season. Fewer points
+        <span id="scale" style="display:inline-flex;gap:2px;vertical-align:middle;margin:0 4px"></span>
+        more points</p>
+      <div style="overflow-x:auto"><table class="heat" id="heat"></table></div>
+    </section>
+
+    <section class="card span-12">
+      <h2>Next matches</h2>
+      <p class="hint">Each model's bet: the score with the most expected points. Benchmarks left out: baseline bets the same score every time, and market needs odds that don't exist yet.</p>
+      <div style="overflow-x:auto"><table class="bets" id="bets"></table></div>
+    </section>
+  </div>
+
+  <div class="foot">
+    <span>Points: exact score 9 · right outcome and goal difference 4 · right outcome 3 · otherwise 0.</span>
+    <span id="generated"></span>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="charts.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
