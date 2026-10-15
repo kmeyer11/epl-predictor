@@ -12,24 +12,14 @@ from datetime import datetime, timezone
 
 import numpy as np
 from scipy.optimize import minimize
-from scipy.stats import poisson
 
-MAX_GOALS = 9
-
-
-def _tau(x, y, lam, mu, rho):
-    if x == 0 and y == 0:
-        return 1 - lam * mu * rho
-    if x == 0 and y == 1:
-        return 1 + lam * rho
-    if x == 1 and y == 0:
-        return 1 + mu * rho
-    if x == 1 and y == 1:
-        return 1 - rho
-    return 1.0
+from .base import Model, dc_tau, poisson_matrix
 
 
-class DixonColes:
+class DixonColes(Model):
+    name = "dixon-coles"
+    description = "Attack and defence strength per team, recent results weighted more."
+
     def __init__(self, xi=0.0018, l2=1e-3):
         """xi: daily time-decay rate (higher = older results matter less).
         l2: ridge penalty on attack/defence params, keeps the fit stable
@@ -84,19 +74,19 @@ class DixonColes:
                 + away_goals * np.log(mu)
                 - mu
             )
-            tau_vals = np.array(
-                [
-                    _tau(hg, ag, lm, m, rho)
-                    for hg, ag, lm, m in zip(home_goals, away_goals, lam, mu)
-                ]
-            )
-            tau_vals = np.clip(tau_vals, 1e-10, None)
+            tau_vals = np.clip(dc_tau(home_goals, away_goals, lam, mu, rho), 1e-10, None)
             ll = ll + np.log(tau_vals)
 
             penalty = self.l2 * (np.sum(alpha**2) + np.sum(beta**2))
             return -np.sum(weights * ll) + penalty
 
-        x0 = np.zeros(2 * n + 2)
+        # Start from the previous fit when there is one: the backtest refits
+        # every few days on nearly the same data, so this saves most iterations.
+        x0 = np.concatenate([
+            [self.alpha.get(t, 0.0) for t in teams],
+            [self.beta.get(t, 0.0) for t in teams],
+            [self.gamma, self.rho],
+        ])
         bounds = [(-3, 3)] * n + [(-3, 3)] * n + [(-2, 2), (-0.9, 0.9)]
         result = minimize(neg_log_lik, x0, method="L-BFGS-B", bounds=bounds)
         alpha, beta, gamma, rho = unpack(result.x)
@@ -105,57 +95,34 @@ class DixonColes:
         self.beta = dict(zip(teams, beta))
         self.gamma = float(gamma)
         self.rho = float(rho)
+
+        # Newly promoted teams have no history; give them the average attack
+        # and defence of the three weakest teams in the data.
+        weakest = sorted(teams, key=lambda t: self.alpha[t] - self.beta[t])[:3]
+        self._newcomer = (
+            float(np.mean([self.alpha[t] for t in weakest])),
+            float(np.mean([self.beta[t] for t in weakest])),
+        )
         self._fitted = True
         return self
+
+    def _strength(self, team):
+        if team in self.alpha:
+            return self.alpha[team], self.beta[team]
+        return self._newcomer
 
     def expected_goals(self, home_team, away_team):
         if not self._fitted:
             raise RuntimeError("Call fit() before predicting.")
-        if home_team not in self.alpha or away_team not in self.alpha:
-            missing = home_team if home_team not in self.alpha else away_team
-            raise ValueError(f"'{missing}' has no fitted data (not enough recent matches).")
-        lam = np.exp(self.alpha[home_team] + self.beta[away_team] + self.gamma)
-        mu = np.exp(self.alpha[away_team] + self.beta[home_team])
+        home_att, home_def = self._strength(home_team)
+        away_att, away_def = self._strength(away_team)
+        lam = np.exp(home_att + away_def + self.gamma)
+        mu = np.exp(away_att + home_def)
         return float(lam), float(mu)
 
-    def score_matrix(self, home_team, away_team):
-        lam, mu = self.expected_goals(home_team, away_team)
-        goals = np.arange(0, MAX_GOALS + 1)
-        home_probs = poisson.pmf(goals, lam)
-        away_probs = poisson.pmf(goals, mu)
-        matrix = np.outer(home_probs, away_probs)
-        for x in range(2):
-            for y in range(2):
-                matrix[x, y] *= _tau(x, y, lam, mu, self.rho)
-        matrix /= matrix.sum()
-        return matrix
-
-    def predict_match(self, home_team, away_team, top_n=3):
-        matrix = self.score_matrix(home_team, away_team)
-        lam, mu = self.expected_goals(home_team, away_team)
-        home_win = float(np.tril(matrix, -1).sum())
-        draw = float(np.trace(matrix))
-        away_win = float(np.triu(matrix, 1).sum())
-
-        flat_idx = np.argsort(matrix, axis=None)[::-1][:top_n]
-        top_scores = [
-            {
-                "score": f"{i}-{j}",
-                "probability": float(matrix[i, j]),
-            }
-            for i, j in (np.unravel_index(k, matrix.shape) for k in flat_idx)
-        ]
-
-        return {
-            "home_team": home_team,
-            "away_team": away_team,
-            "expected_home_goals": round(lam, 2),
-            "expected_away_goals": round(mu, 2),
-            "home_win_pct": round(home_win * 100, 1),
-            "draw_pct": round(draw * 100, 1),
-            "away_win_pct": round(away_win * 100, 1),
-            "top_scores": top_scores,
-        }
+    def score_matrix(self, fixture):
+        lam, mu = self.expected_goals(fixture["home_team"], fixture["away_team"])
+        return poisson_matrix(lam, mu, self.rho)
 
 
 def _parse_date(iso_string):
