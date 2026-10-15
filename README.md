@@ -24,7 +24,7 @@ Then edit `.env`:
   https://www.football-data.org/client/register. Registration is immediate
   and needs only an email address.
 - `SITE_DIR` (optional): the folder `export` writes the website's
-  `data.js` to. Defaults to `data/site`.
+  `data.js` to. Defaults to `site/`.
 
 The tool caches results and predictions locally in a SQLite database
 (`data/epl_predictor.db`).
@@ -44,8 +44,8 @@ python -m epl_predictor.cli backtest
 # List the models.
 python -m epl_predictor.cli models
 
-# Write data.js for the comparison website.
-python -m epl_predictor.cli export
+# Update the comparison website and open it.
+python -m epl_predictor.cli export --open
 
 # Show the leaderboard again, with options.
 python -m epl_predictor.cli compare --by-season
@@ -116,10 +116,17 @@ make a subclass with a new name instead of changing the defaults.
 
 ## Website
 
-A static comparison page lives in the council repo, in
-`03-website-making/sites/epl-predictor/`. It reads the `data.js` that
-`export` writes. To refresh it, run `fetch`, then `backtest` if a model
-changed, then `predict` before a round, then `export`.
+`site/` is a static dashboard that compares the models: the leaderboard
+(backtest and live), each season's race against the bookmakers, points
+per season, and every model's bet for the next matches. It is plain HTML
+and JavaScript, with no build step or server.
+
+`export` writes the data it shows to `site/data.js`. Rerun it after
+`fetch`, `backtest`, or `predict`, then reload the page.
+
+```bash
+python -m epl_predictor.cli export --open   # or open site/index.html
+```
 
 ## Notes
 
