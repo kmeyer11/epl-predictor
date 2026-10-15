@@ -215,6 +215,26 @@ def export_site(open_site):
         click.launch(str(config.SITE_DIR / "index.html"))
 
 
+@cli.command()
+@click.pass_context
+def daily(ctx):
+    """Run fetch, predict, backtest and export in turn, for a daily schedule.
+
+    A failing step doesn't stop the later ones, so a football-data.org outage
+    still leaves an up-to-date website. Exits non-zero if any step failed.
+    """
+    failed = []
+    for step in (fetch, predict, backtest, export_site):
+        click.echo(f"== {step.name} ==")
+        try:
+            ctx.invoke(step)
+        except Exception as e:
+            click.echo(f"{step.name} failed: {e}", err=True)
+            failed.append(step.name)
+    if failed:
+        raise click.ClickException(f"failed steps: {', '.join(failed)}")
+
+
 def _current_versions(model_names=None):
     return [(name, MODELS[name].version) for name in (model_names or MODELS)]
 

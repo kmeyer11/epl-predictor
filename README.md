@@ -27,6 +27,8 @@ Then edit `.env`:
   and needs only an email address.
 - `SITE_DIR` (optional): the folder `export` writes the website's
   `data.js` to. Defaults to `site/`.
+- `EPL_DATA_DIR` (optional): the folder for the database. Defaults to
+  `data/`.
 
 The tool caches results and predictions locally in a SQLite database
 (`data/epl_predictor.db`).
@@ -48,6 +50,9 @@ python -m epl_predictor.cli models
 
 # Update the comparison website and open it.
 python -m epl_predictor.cli export --open
+
+# Run fetch, predict, backtest and export in turn (for a daily schedule).
+python -m epl_predictor.cli daily
 
 # Show the leaderboard again, with options.
 python -m epl_predictor.cli compare --by-season
@@ -138,6 +143,19 @@ and JavaScript, with no build step or server.
 ```bash
 python -m epl_predictor.cli export --open   # or open site/index.html
 ```
+
+## Docker
+
+The image runs `daily` on start and then every day at 06:00 UTC, and
+serves `site/` on port 8010. The database lives in the `/data` volume.
+
+```bash
+docker build -t epl-predictor .
+docker run -d --env-file .env -p 127.0.0.1:8010:8010 -v epl-data:/data epl-predictor
+```
+
+Set `REFRESH_AT` (UTC, `HH:MM`) to change the refresh time. The homelab
+deploys it from `homelab/services/epl-predictor/`.
 
 ## Notes
 

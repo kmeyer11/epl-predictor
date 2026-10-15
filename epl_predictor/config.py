@@ -6,8 +6,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = ROOT_DIR / "data"
-DATA_DIR.mkdir(exist_ok=True)
+# EPL_DATA_DIR lets the Docker image keep the database in a mounted volume.
+DATA_DIR = Path(os.environ.get("EPL_DATA_DIR") or ROOT_DIR / "data")
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 DB_PATH = DATA_DIR / "epl_predictor.db"
 
