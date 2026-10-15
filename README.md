@@ -147,7 +147,8 @@ python -m epl_predictor.cli export --open   # or open site/index.html
 ## Docker
 
 The image runs `daily` on start and then every day at 06:00 UTC, and
-serves `site/` on port 8010. The database lives in the `/data` volume.
+serves `site/` on port 8010. The database and `data.js` live in the
+`/data` volume, so the page keeps its data across restarts.
 
 ```bash
 docker build -t epl-predictor .
